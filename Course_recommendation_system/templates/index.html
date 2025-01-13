@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Recommendation System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Course Recommendation System</h1>
+        <form id="recommendationForm" class="mt-4">
+            <div class="mb-3">
+                <label for="studentId" class="form-label">Student ID:</label>
+                <input id="studentId" list="studentIdList" class="form-control" name="student_id" placeholder="Type or select a Student ID" required>
+                <datalist id="studentIdList">
+                    {% for student_id in student_ids %}
+                        <option value="{{ student_id }}"></option>
+                    {% endfor %}
+                </datalist>
+            </div>
+            <div class="mb-3">
+                <label for="courseTitle" class="form-label">Course Title:</label>
+                <input id="courseTitle" list="courseTitleList" class="form-control" name="course_title" placeholder="Type or select a Course Title" required>
+                <datalist id="courseTitleList">
+                    {% for title in course_titles %}
+                        <option value="{{ title }}"></option>
+                    {% endfor %}
+                </datalist>
+            </div>
+            <div class="mb-3">
+                <label for="categoryFilter" class="form-label">Course Category (Optional):</label>
+                <input id="categoryFilter" list="categoryList" class="form-control" name="category_filter" placeholder="Type or select a Course Category">
+                <datalist id="categoryList">
+                    {% for category in course_categories %}
+                        <option value="{{ category }}"></option>
+                    {% endfor %}
+                </datalist>
+            </div>
+            <button type="submit" class="btn btn-primary">Get Recommendations</button>
+        </form>
+        <div id="results" class="mt-5"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#recommendationForm').on('submit', function (e) {
+                e.preventDefault();
+                const formData = $(this).serialize();
+                $.post('/get_recommendations', formData, function (response) {
+                    let resultHtml = '<h3>Recommended Courses</h3><table class="table table-bordered">';
+                    resultHtml += '<thead><tr><th>Course ID</th><th>Course Title</th><th>Course Category</th></tr></thead><tbody>';
+                    response.results.forEach(item => {
+                        resultHtml += `<tr><td>${item.course_id}</td><td>${item.course_title}</td><td>${item.course_category}</td></tr>`;
+                    });
+                    resultHtml += '</tbody></table>';
+                    $('#results').html(resultHtml);
+                }).fail(function (xhr) {
+                    alert(xhr.responseJSON.error || 'An error occurred. Please try again.');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
